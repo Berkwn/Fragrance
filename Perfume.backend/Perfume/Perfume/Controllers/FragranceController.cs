@@ -70,6 +70,23 @@ namespace Perfume.Controllers
             return Ok(new { Message = "İnceleme başarıyla eklendi" });
         }
 
+        [HttpGet("{fragranceId}")]
+        public async Task<ActionResult<List<ReviewDto>>> GetReviews(int fragranceId)
+        {
+            var reviews = await _context.Reviews.Where(x => x.FragranceId == fragranceId)
+                .Include(x => x.User).Select(x => new ReviewDto
+                {
+                    Comment = x.Comment,
+                    DateTime = x.CreatedAt,
+                    Id = x.Id,
+                    Rating = x.Rating,
+                    UserName = x.User.Username
+                }).ToListAsync();
+
+            return Ok(reviews);
+
+        }
+
         [HttpGet]
         public async Task<ActionResult<List<SearchResponseDto>>> Search([FromQuery] string query)
         {
@@ -116,6 +133,9 @@ namespace Perfume.Controllers
 
             return Ok(result);
         }
+
+
+
 
         [HttpPost] 
         public async Task<ActionResult<List<FragranceDto>>> Recommend([FromBody] SearchRequest request)

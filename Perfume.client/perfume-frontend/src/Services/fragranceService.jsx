@@ -27,7 +27,13 @@ export const SearchFragances = async (query) => {
     return response.data;
 }
 
+// src/Services/fragranceService.js
 
+export const getFragranceReviews = async (fragranceId) => {
+    // DİKKAT: URL'in sonuna ID'yi ekliyoruz. Soru işareti (?) yok.
+    const response = await api.get(`Fragrance/GetReviews/${fragranceId}`);
+    return response.data;
+}
 
 export const addReview = async (reviewData) => {
     // Token'ı al
