@@ -8,6 +8,7 @@
         public Brand Brand { get; set; }
         public decimal Price { get; set; }
         public string Gender { get; set; }
+        public string ImageUrl  { get; set; }
         public bool IsOriginal { get; set; }
         public ICollection<FragranceNote> FragranceNotes { get; set; }
         public ICollection<Review> Reviews { get; set; }

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MdSearch, MdCompareArrows, MdStar, MdClose, MdSend, MdComment, MdThumbUp, MdThumbDown } from 'react-icons/md';
+import { MdSearch, MdCompareArrows, MdStar, MdClose, MdSend, MdComment, MdThumbUp } from 'react-icons/md';
 import { GiPerfumeBottle } from 'react-icons/gi';
 import { SearchFragances, addReview, getFragranceReviews } from '../Services/fragranceService';
 
@@ -115,12 +115,10 @@ const SearchPage = () => {
     ? (fragranceReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews).toFixed(1) 
     : "0.0";
 
-  // 3. Yıldız Dağılımı (Hangi puandan kaç tane var?)
-  // Başlangıç: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+  // 3. Yıldız Dağılımı
   const starCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
   
   fragranceReviews.forEach((review) => {
-      // Eğer rating geçerli bir sayıysa (1-5 arası) sayacı artır
       if (starCounts[review.rating] !== undefined) {
           starCounts[review.rating]++;
       }
@@ -171,6 +169,7 @@ const SearchPage = () => {
         {/* SONUÇLAR */}
         <div className="w-full grid gap-8 mb-16">
             {results.map((item) => (
+                console.log(item),
                 <div key={item.pairId} className={`relative bg-surface-dark border ${activeReviewId === item.dupe.id ? 'border-primary shadow-2xl shadow-primary/20' : 'border-surface-highlight'} rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 group`}>
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
 
@@ -179,10 +178,17 @@ const SearchPage = () => {
                         {/* SOL: Orijinal */}
                         <div className="flex-1 p-6 flex flex-col items-center text-center border-b md:border-b-0 md:border-r border-surface-highlight bg-white/5">
                             <span className="mb-2 px-3 py-1 bg-black/40 rounded-full text-xs font-bold text-gray-300 uppercase tracking-widest">Orijinal</span>
-                            <img src={item.originalFragrance?.imageUrl || "https://placehold.co/150"} alt={item.originalFragrance?.name} className="h-40 object-contain drop-shadow-xl mb-4 group-hover:scale-105 transition-transform" />
+                            
+                            {/* DÜZELTME: Orijinal Resim */}
+                            <img 
+                                src={item.originalFragrance?.imageUrl || "https://placehold.co/300x400/252f3f/FFF?text=Gorsel+Yok"} 
+                                alt={item.originalFragrance?.name} 
+                                className="h-48 object-contain drop-shadow-xl mb-4 group-hover:scale-105 transition-transform rounded-lg" 
+                            />
+                            
                             <h3 className="text-lg font-bold text-white">{item.originalFragrance?.brand}</h3>
                             <p className="text-text-muted">{item.originalFragrance?.name}</p>
-                            <span className="mt-2 text-primary font-bold text-xl">{item.originalFragrance?.price}</span>
+                            <span className="mt-2 text-primary font-bold text-xl">{item.originalFragrance?.price} TL</span>
                         </div>
 
                         {/* ORTA: VS */}
@@ -202,10 +208,17 @@ const SearchPage = () => {
                         {/* SAĞ: Muadil */}
                         <div className="flex-1 p-6 flex flex-col items-center text-center bg-gradient-to-br from-primary/10 to-transparent">
                             <span className="mb-2 px-3 py-1 bg-primary rounded-full text-xs font-bold text-white uppercase tracking-widest shadow-lg shadow-primary/40">Muadil Önerisi</span>
-                            <img src={item.dupe?.imageUrl || "https://placehold.co/150"} alt={item.dupe?.name} className="h-40 object-contain drop-shadow-xl mb-4 group-hover:scale-105 transition-transform" />
+                            
+                            {/* DÜZELTME: Muadil Resim */}
+                            <img 
+                                src={item.dupe?.imageUrl || "https://placehold.co/300x400/252f3f/FFF?text=Gorsel+Yok"} 
+                                alt={item.dupe?.name} 
+                                className="h-48 object-contain drop-shadow-xl mb-4 group-hover:scale-105 transition-transform rounded-lg" 
+                            />
+                            
                             <h3 className="text-lg font-bold text-white">{item.dupe?.brand}</h3>
                             <p className="text-text-muted">{item.dupe?.name}</p>
-                            <span className="mt-2 text-green-400 font-bold text-xl">{item.dupe?.price}</span>
+                            <span className="mt-2 text-green-400 font-bold text-xl">{item.dupe?.price} TL</span>
 
                             {/* BUTONLAR */}
                             <div className="mt-4 flex flex-col gap-2 w-full max-w-[200px]">
@@ -263,55 +276,52 @@ const SearchPage = () => {
                     <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-10">
                         
                        <div className="md:col-span-1">
-    <div className="bg-[#130d18] rounded-2xl p-6 border border-white/5 sticky top-24">
-        
-        {/* Ortalama Puan Gösterimi */}
-        <div className="flex items-end gap-3 mb-6">
-            <span className="text-6xl font-bold text-white">{averageRating}</span>
-            <div className="flex flex-col mb-2">
-                <div className="flex text-yellow-400 text-sm">
-                    {/* Dinamik Yıldızlar: Ortalamaya göre dolu/boş yıldız göstermek istersen */}
-                    {[...Array(5)].map((_, i) => (
-                        <MdStar key={i} className={i < Math.round(averageRating) ? "text-yellow-400" : "text-gray-700"} />
-                    ))}
-                </div>
-                <span className="text-gray-400 text-xs">{totalReviews} Yorum</span>
-            </div>
-        </div>
+                            <div className="bg-[#130d18] rounded-2xl p-6 border border-white/5 sticky top-24">
+                                
+                                {/* Ortalama Puan */}
+                                <div className="flex items-end gap-3 mb-6">
+                                    <span className="text-6xl font-bold text-white">{averageRating}</span>
+                                    <div className="flex flex-col mb-2">
+                                        <div className="flex text-yellow-400 text-sm">
+                                            {[...Array(5)].map((_, i) => (
+                                                <MdStar key={i} className={i < Math.round(averageRating) ? "text-yellow-400" : "text-gray-700"} />
+                                            ))}
+                                        </div>
+                                        <span className="text-gray-400 text-xs">{totalReviews} Yorum</span>
+                                    </div>
+                                </div>
 
-        {/* Barlar (Progress Bars) */}
-        <div className="flex flex-col gap-3 mb-8">
-            {[5, 4, 3, 2, 1].map((star) => {
-                // Her bir yıldızın yüzdesini hesapla
-                const count = starCounts[star];
-                const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+                                {/* Barlar */}
+                                <div className="flex flex-col gap-3 mb-8">
+                                    {[5, 4, 3, 2, 1].map((star) => {
+                                        const count = starCounts[star];
+                                        const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
 
-                return (
-                    <div key={star} className="flex items-center gap-3 text-xs">
-                        <span className="text-gray-400 w-2 font-bold">{star}</span>
-                        <div className="flex-1 h-2 bg-[#2d2438] rounded-full overflow-hidden">
-                            <div 
-                                className="h-full bg-gradient-to-r from-green-400 to-green-500 transition-all duration-500" 
-                                style={{ width: `${percentage}%` }} // Dinamik Genişlik
-                            ></div>
+                                        return (
+                                            <div key={star} className="flex items-center gap-3 text-xs">
+                                                <span className="text-gray-400 w-2 font-bold">{star}</span>
+                                                <div className="flex-1 h-2 bg-[#2d2438] rounded-full overflow-hidden">
+                                                    <div 
+                                                        className="h-full bg-gradient-to-r from-green-400 to-green-500 transition-all duration-500" 
+                                                        style={{ width: `${percentage}%` }}
+                                                    ></div>
+                                                </div>
+                                                <span className="text-gray-500 text-[10px] w-6 text-right">%{Math.round(percentage)}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <button 
+                                    onClick={() => handleOpenWriteModal(selectedFragranceId)}
+                                    className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-xl transition-colors text-sm font-bold shadow-lg shadow-primary/20"
+                                >
+                                    Sen de Değerlendir
+                                </button>
+                            </div>
                         </div>
-                        {/* İstersen yanına sayısını da yazabilirsin */}
-                        <span className="text-gray-500 text-[10px] w-6 text-right">%{Math.round(percentage)}</span>
-                    </div>
-                );
-            })}
-        </div>
 
-        <button 
-            onClick={() => handleOpenWriteModal(selectedFragranceId)}
-            className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-xl transition-colors text-sm font-bold shadow-lg shadow-primary/20"
-        >
-            Sen de Değerlendir
-        </button>
-    </div>
-</div>
-
-                        {/* SAĞ: Liste */}
+                        {/* Liste */}
                         <div className="md:col-span-2 flex flex-col gap-4">
                             <h3 className="text-xl font-bold text-white mb-2">Son Yorumlar</h3>
                             
@@ -328,30 +338,30 @@ const SearchPage = () => {
                             ) : (
                                 fragranceReviews.map((review) => (
                                     <div key={review.id} className="bg-[#130d18] rounded-2xl p-6 border border-white/5 hover:border-white/10 transition-colors">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className="flex gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                                                    {review.username ? review.username.charAt(0).toUpperCase() : 'A'}
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-white font-bold text-sm">{review.username || "Kullanıcı"}</h4>
-                                                    <div className="flex text-yellow-400 text-xs mt-1">
-                                                        {[...Array(5)].map((_,i) => (
-                                                            <MdStar key={i} className={i < review.rating ? "" : "text-gray-700"} />
-                                                        ))}
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex gap-4">
+                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                                                        {review.username ? review.username.charAt(0).toUpperCase() : 'A'}
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-white font-bold text-sm">{review.userName || "Kullanıcı"}</h4>
+                                                        <div className="flex text-yellow-400 text-xs mt-1">
+                                                                {[...Array(5)].map((_,i) => (
+                                                                    <MdStar key={i} className={i < review.rating ? "" : "text-gray-700"} />
+                                                                ))}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <span className="text-xs text-gray-500">{review.date}</span>
                                             </div>
-                                            <span className="text-xs text-gray-500">{review.date}</span>
-                                        </div>
-                                        
-                                        <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                                            "{review.comment}"
-                                        </p>
+                                            
+                                            <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                                                "{review.comment}"
+                                            </p>
 
-                                        <div className="flex gap-4 text-xs text-gray-500 font-medium border-t border-white/5 pt-4">
-                                            <button className="flex items-center gap-1 hover:text-white transition-colors"><MdThumbUp /> Faydalı (0)</button>
-                                        </div>
+                                            <div className="flex gap-4 text-xs text-gray-500 font-medium border-t border-white/5 pt-4">
+                                                <button className="flex items-center gap-1 hover:text-white transition-colors"><MdThumbUp /> Faydalı (0)</button>
+                                            </div>
                                     </div>
                                 ))
                             )}
@@ -384,6 +394,5 @@ const SearchPage = () => {
     </div>
   );
 };
-
 
 export default SearchPage;
