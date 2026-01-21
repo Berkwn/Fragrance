@@ -3,22 +3,34 @@ import { useNavigate } from 'react-router-dom';
 import { 
   MdSearch, MdShoppingBag, MdPerson, MdSpa, MdWbSunny, MdForest, 
   MdDiamond, MdLocalFireDepartment, MdWaterDrop, MdCheck, MdClose, 
-  MdAddShoppingCart, MdArrowForward, MdStar 
+  MdAddShoppingCart, MdArrowForward, MdStar , MdCategory
 } from 'react-icons/md'; 
 import { GiPerfumeBottle } from 'react-icons/gi';
-import { getAllNotes, getRecommendations } from '../Services/fragranceService';
+import { getAllNotes, getRecommendations,getFragranceFamilies } from '../Services/fragranceService';
+
 
 const RecommendPage = () => {
   const navigate = useNavigate();
   
   // STATE'LER
-  const [activeFamily, setActiveFamily] = useState('Popular'); 
+  const [activeFamily, setActiveFamily] = useState('Baharatli'); 
+  const [families,setFamilies] = useState([]);
   const [notes, setNotes] = useState([]); 
   const [selectedNotes, setSelectedNotes] = useState([]); 
   const [perfumes, setPerfumes] = useState([]); 
   const [loading, setLoading] = useState(false); 
   const [hasSearched, setHasSearched] = useState(false);
-
+const familyIcons = {
+    
+    'Çiçeksi': MdSpa,
+    'Meyveli': MdWbSunny,
+    'Odunsu': MdForest,
+    'Oryantal': MdDiamond,
+    'Baharatlı': MdLocalFireDepartment,
+    'Ferah': MdWaterDrop,
+    'Tatlı': GiPerfumeBottle,
+    'Diğer': MdCategory
+  };
   // Sadece sayfa ilk açıldığında çalışır
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -29,8 +41,9 @@ const RecommendPage = () => {
   // API 1: Notaları Getir
   const fetchNotes = async () => {
     try {
-        const data = await getAllNotes();
-        setNotes(data);
+       const [notesData,familiesData] = await Promise.all([getAllNotes(),getFragranceFamilies()]);
+        setNotes(notesData);
+        setFamilies(familiesData);
     } catch (error) {
         console.error("Notalar çekilemedi:", error);
     }
@@ -61,6 +74,8 @@ const fetchPerfumes = async () => {
         setLoading(false);
     }
   };
+
+
   // State Güncelleme (API İsteği Yok)
   const toggleNote = (noteName) => {
     let newSelection;
@@ -73,12 +88,12 @@ const fetchPerfumes = async () => {
     console.log("Seçilen Notalar:", newSelection);
   };
 
-  const filteredNotes = notes.filter(n => n.family === activeFamily);
+  const filteredNotes =  notes.filter(note => note.family === activeFamily);
 
-  return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white">
+ return (
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased">
       
-      {/* HEADER */}
+      {/* HEADER (Aynı kalıyor) */}
       <header className="sticky top-0 z-50 flex items-center justify-between border-b border-surface-highlight bg-background-dark/95 backdrop-blur-sm px-6 py-3 lg:px-10">
         <div className="flex items-center gap-8">
           <button type="button" onClick={() => navigate('/')} className="flex items-center gap-3 text-white transition-opacity hover:opacity-80">
@@ -99,47 +114,44 @@ const fetchPerfumes = async () => {
               Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">Signature Scent</span>
             </h1>
             <p className="max-w-2xl text-lg text-text-muted">
-              Sevdiğin içerikleri seç, ardından "Sonuçları Göster" butonuna basarak yapay zeka önerilerini gör.
+              Sevdiğin içerikleri seç, yapay zeka sana en uygun parfümü bulsun.
             </p>
           </div>
 
           <div className="mb-8 flex flex-col gap-6 rounded-2xl bg-surface-dark p-6 shadow-xl ring-1 ring-white/5">
             
-            {/* Sekmeler */}
+         
             <div className="overflow-x-auto hide-scrollbar pb-2">
               <div className="flex min-w-max gap-8 border-b border-surface-highlight px-2">
-                {[
-                  { name: 'Popular', icon: MdStar },
-                  { name: 'Floral', icon: MdSpa },
-                  { name: 'Citrus', icon: MdWbSunny }, 
-                  { name: 'Woody', icon: MdForest },
-                  { name: 'Oriental', icon: MdDiamond },
-                  { name: 'Spicy', icon: MdLocalFireDepartment },
-                  { name: 'Fresh', icon: MdWaterDrop },
-                ].map((family) => (
-                  <button 
-                    key={family.name}
-                    type="button" // Type button eklendi
-                    onClick={() => setActiveFamily(family.name)}
-                    className={`group flex flex-col items-center gap-2 border-b-[3px] pb-3 pt-2 transition-all ${activeFamily === family.name ? 'border-primary' : 'border-transparent hover:border-surface-highlight'}`}
-                  >
-                    <family.icon className={`text-2xl transition-transform group-hover:scale-110 ${activeFamily === family.name ? 'text-primary' : 'text-text-muted group-hover:text-white'}`} />
-                    <span className={`text-sm font-bold transition-colors ${activeFamily === family.name ? 'text-white' : 'text-text-muted group-hover:text-white'}`}>
-                      {family.name}
-                    </span>
-                  </button>
-                ))}
+                {families.map((familyName) => {
+                
+                  const IconComponent = familyIcons[familyName] || MdCategory;
+                  
+                  return (
+                    <button 
+                      key={familyName}
+                      type="button"
+                      onClick={() => setActiveFamily(familyName)}
+                      className={`group flex flex-col items-center gap-2 border-b-[3px] pb-3 pt-2 transition-all ${activeFamily === familyName ? 'border-primary' : 'border-transparent hover:border-surface-highlight'}`}
+                    >
+                      <IconComponent className={`text-2xl transition-transform group-hover:scale-110 ${activeFamily === familyName ? 'text-primary' : 'text-text-muted group-hover:text-white'}`} />
+                      <span className={`text-sm font-bold transition-colors ${activeFamily === familyName ? 'text-white' : 'text-text-muted group-hover:text-white'}`}>
+                        {familyName}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* NOTA LİSTESİ */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-white">{activeFamily} Notes</h3>
+                <h3 className="text-lg font-bold text-white">{activeFamily} </h3>
               </div>
               <div className="flex flex-wrap gap-3">
                 {filteredNotes.length === 0 && (
-                    <p className="text-sm text-text-muted">Bu kategoride henüz nota bulunamadı.</p>
+                    <p className="text-sm text-text-muted">Bu kategoride gösterilecek nota yok.</p>
                 )}
 
                 {filteredNotes.map(note => {
@@ -147,7 +159,7 @@ const fetchPerfumes = async () => {
                   return (
                     <button 
                         key={note.id} 
-                        type="button" // Type button eklendi
+                        type="button"
                         onClick={() => toggleNote(note.name)}
                         className={`flex h-9 items-center gap-2 rounded-lg px-4 py-1.5 text-sm font-medium transition-all ${
                             isSelected 
@@ -163,9 +175,8 @@ const fetchPerfumes = async () => {
               </div>
             </div>
 
-            {/* SEÇİLENLER VE BUTON */}
+            {/* SEÇİLENLER VE BUTON (Aynı kalıyor) */}
             <div className="border-t border-surface-highlight pt-6 mt-2 flex flex-col md:flex-row items-center justify-between gap-4">
-                
                 <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
                     <span className="text-sm font-medium text-text-muted mr-2">Seçilenler ({selectedNotes.length}):</span>
                     {selectedNotes.map(note => (
@@ -181,7 +192,6 @@ const fetchPerfumes = async () => {
                     )}
                 </div>
 
-                {/* BÜYÜK BUTON - API isteğini BU atar */}
                 <button 
                     type="button"
                     onClick={fetchPerfumes}
@@ -200,10 +210,12 @@ const fetchPerfumes = async () => {
             </div>
           </div>
 
-          {/* SONUÇLAR */}
+          {/* SONUÇLAR (Burası senin önceki kodunla aynı, sadece kopyala-yapıştır yapabilirsin) */}
           {hasSearched && (
             <div className="animate-fade-in-up">
-                <div className="flex items-end justify-between mb-6">
+                {/* ... Şişe kartları kodun burada devam edecek ... */}
+                {/* Önceki mesajımda verdiğim güncel resimli kart yapısını buraya koy */}
+                 <div className="flex items-end justify-between mb-6">
                     <h2 className="text-2xl font-bold text-white">
                         {loading ? 'Yükleniyor...' : `${perfumes.length} Parfüm Bulundu`}
                     </h2>
@@ -211,66 +223,47 @@ const fetchPerfumes = async () => {
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {perfumes.map((perfume) => (
-                    <div key={perfume.id} className="group flex flex-col overflow-hidden rounded-2xl bg-surface-dark transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10">
-                        
-                        <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#25202b] p-6">
-                        <div className="absolute right-3 top-3 z-10 rounded-full bg-surface-highlight/80 px-2 py-1 backdrop-blur-md">
-                            <span className="text-xs font-bold text-white">{perfume.match} Eşleşme</span>
-                        </div>
-                        
-                        <div className={`h-full w-full rounded-lg bg-gradient-to-br ${perfume.gradientFrom} ${perfume.gradientTo} flex items-center justify-center shadow-lg relative`}>
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent opacity-50"></div>
-                            
-                            {perfume.bottleShape === 'rect' && (
-                                <div className="w-1/2 h-2/3 bg-black/40 border border-white/10 rounded-t-full rounded-b-xl backdrop-blur-sm relative shadow-2xl">
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-6 bg-yellow-600/80 rounded-sm"></div>
-                                </div>
-                            )}
-                            {perfume.bottleShape === 'rounded' && (
-                                <div className="w-2/3 h-2/3 bg-white/5 border border-white/10 rounded-lg backdrop-blur-sm relative shadow-2xl flex flex-col items-center justify-end pb-4">
-                                    <div className="w-full h-1/4 bg-pink-500/10 absolute top-0 rounded-t-lg"></div>
-                                </div>
-                            )}
-                            {perfume.bottleShape === 'circle' && (
-                                <div className="w-1/2 h-3/4 bg-white/5 border border-white/10 rounded-full backdrop-blur-md relative shadow-2xl">
-                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-gray-300/20 backdrop-blur-sm border border-white/20"></div>
-                                </div>
-                            )}
-                            {perfume.bottleShape === 'rotated' && (
-                                <div className="w-3/5 h-3/5 bg-amber-900/20 border border-amber-500/20 rounded-sm backdrop-blur-sm relative shadow-2xl rotate-2"></div>
-                            )}
-                        </div>
-
-                        <button className="absolute bottom-4 right-4 translate-y-4 opacity-0 shadow-lg shadow-black/40 transition-all group-hover:translate-y-0 group-hover:opacity-100 flex size-10 items-center justify-center rounded-full bg-primary text-white">
-                            <MdAddShoppingCart size={20} />
-                        </button>
-                        </div>
-
-                        <div className="flex flex-1 flex-col gap-2 p-4">
-                        <div className="flex justify-between items-start">
-                            <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-text-muted">{perfume.brand}</p>
-                            <h3 className="text-lg font-bold text-white">{perfume.name}</h3>
+                    <div key={perfume.id} className="group flex flex-col overflow-hidden rounded-2xl bg-surface-dark transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 border border-white/5">
+                        <div className="relative aspect-[4/5] w-full overflow-hidden bg-white p-6 flex items-center justify-center">
+                            <div className="absolute right-3 top-3 z-10 rounded-full bg-primary/90 px-2 py-1 backdrop-blur-md shadow-md">
+                                <span className="text-xs font-bold text-white">
+                                    {perfume.matchCount ? `${perfume.matchCount} Nota Eşleşti` : 'Öneri'}
+                                </span>
                             </div>
-                            <span className="text-sm font-semibold text-white">{perfume.price}</span>
+                            <img 
+                                src={perfume.imageUrl} 
+                                alt={perfume.name} 
+                                onError={(e) => { e.target.onerror = null; e.target.src = "https://www.e-bargello.com/uploads/products/big/WqgiG0oXb0KFS2N5R0d6Ri6CB0Yr0G60jVjYXd45.jpg"; }}
+                                className="h-full w-full object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-110" 
+                            />
+                            <button className="absolute bottom-4 right-4 translate-y-4 opacity-0 shadow-lg shadow-black/40 transition-all group-hover:translate-y-0 group-hover:opacity-100 flex size-10 items-center justify-center rounded-full bg-primary text-white hover:bg-primary-dark">
+                                <MdAddShoppingCart size={20} />
+                            </button>
                         </div>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                            {perfume.notes && perfume.notes.map((note, index) => (
-                            <span key={index} className="rounded bg-surface-highlight px-1.5 py-0.5 text-[10px] font-medium text-text-muted">{note}</span>
-                            ))}
-                        </div>
+                        <div className="flex flex-1 flex-col gap-2 p-4 bg-[#1e1824]">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-primary mb-1">{perfume.brand}</p>
+                                    <h3 className="text-lg font-bold text-white line-clamp-1" title={perfume.name}>{perfume.name}</h3>
+                                </div>
+                                <span className="text-sm font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded border border-green-400/20">
+                                    {perfume.price} TL
+                                </span>
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-2">
+                                {perfume.notes && perfume.notes.slice(0, 3).map((note, index) => (
+                                    <span key={index} className="rounded bg-white/5 border border-white/10 px-1.5 py-0.5 text-[10px] font-medium text-gray-400">
+                                        {note}
+                                    </span>
+                                ))}
+                                {perfume.notes && perfume.notes.length > 3 && (
+                                    <span className="text-[10px] text-gray-500 flex items-center">+{perfume.notes.length - 3}</span>
+                                )}
+                            </div>
                         </div>
                     </div>
                     ))}
                 </div>
-                
-                {perfumes.length === 0 && !loading && (
-                    <div className="text-center py-20 bg-surface-dark rounded-2xl border border-dashed border-surface-highlight">
-                        <span className="material-symbols-outlined text-4xl text-text-muted mb-3">search_off</span>
-                        <h3 className="text-xl font-bold text-white">Eşleşen Parfüm Bulunamadı</h3>
-                        <p className="text-text-muted mt-2">Lütfen farklı nota kombinasyonları ile tekrar deneyin.</p>
-                    </div>
-                )}
             </div>
           )}
 

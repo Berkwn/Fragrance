@@ -35,6 +35,12 @@ export const getFragranceReviews = async (fragranceId) => {
     return response.data;
 }
 
+export const getFragranceFamilies = async () => {
+    const response = await api.get('Fragrance/GetFragranceFamily');
+    console.log(response.data);
+    return response.data;
+}
+
 export const addReview = async (reviewData) => {
     // Token'ı al
     const token = localStorage.getItem('accessToken');

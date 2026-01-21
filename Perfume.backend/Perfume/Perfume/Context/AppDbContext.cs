@@ -16,7 +16,7 @@ namespace Perfume.Context
         public DbSet<FragranceNote> FragranceNotes { get; set; } // Çoka çok ara tablo
         public DbSet<FragrancePair> FragrancePairs { get; set; } // Eşleşme tablosu
         public DbSet<Review> Reviews { get; set; }
-
+ 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -23,11 +23,22 @@ namespace Perfume.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetFragranceFamily()
+        {
+            var families= _context.Notes.Select(x => x.Family)
+                .Where(x=>x !=null && x!="Diğer")
+                .Distinct()
+                .ToList();
+
+            return Ok(families);
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> GetAllFragrances()
         {
-            var notes = _context.Notes.Select(x => new { x.Id, x.Name, Family = "Popular" }).ToList();
+            var notes = _context.Notes.Select(x => new { x.Id, x.Name, x.Family }).ToList();
 
             return Ok(notes);
         }
