@@ -250,7 +250,7 @@ namespace Perfume.Controllers
                             OriginalFragranceId = originalFragrance.Id,
                             DupeFragranceId = dupeFragrance.Id,
                             SimilarityScore = 90,
-                            ComparisonImageUrl = item.OrijinalGorselUrl, // Kapak resmi olarak orijinali kullanıyoruz
+                            ComparisonImageUrl = item.OrijinalGorselUrl,
                             AdminComment = adminComment
                         };
                         _context.FragrancePairs.Add(newPair);
@@ -279,10 +279,10 @@ namespace Perfume.Controllers
         [HttpPost] 
         public async Task<ActionResult<List<FragranceDto>>> Recommend([FromBody] SearchRequest request)
         {
-            // Frontend'den ge)len listeyi alıyoruz
+           
             var notesToSearch = request.SelectedNotes;
 
-            // Fragrance -> FragranceNotes -> Note ilişkisini çekiyoruz
+            
             var query = _context.Fragrances
                                 .Include(f => f.Brand)
                                 .Include(f => f.FragranceNotes)
@@ -291,39 +291,34 @@ namespace Perfume.Controllers
 
             if (notesToSearch != null && notesToSearch.Any())
             {
-                // notesToSearch değişkenini kullanıyoruz
+             
                 query = query.Where(f => f.FragranceNotes.Any(fn => notesToSearch.Contains(fn.Note.Name)));
             }
 
             var fragrances = await query.ToListAsync();
 
-            // ... (Kodun geri kalanı yani DTO çevirme kısmı AYNI kalacak) ...
-            // Sadece yukarıdaki result hesaplarken de selectedNotes yerine notesToSearch kullan:
+           
 
             var result = fragrances.Select(f => {
                 var perfumeNotes = f.FragranceNotes.Select(fn => fn.Note.Name).ToList();
 
-                // Burayı da güncelle:
                 int matchCount = perfumeNotes.Count(n => notesToSearch.Contains(n));
 
                 int matchPercentage = notesToSearch.Any()
                     ? (int)((double)matchCount / notesToSearch.Count * 100)
                     : 100;
 
-                // ... Görsel atama kodları aynı ...
-
-                // Önceki kodları kopyala yapıştır yapabilirsin, sadece matchCount mantığında
-                // selectedNotes yerine notesToSearch kullanman yeterli.
 
                 return new FragranceDto
                 {
                     Id = f.Id,
                     Brand = f.Brand != null ? f.Brand.Name : "Bilinmiyor",
                     Name = f.Name,
+                    ImageUrl = f.ImageUrl,
                     Price = $"${f.Price}",
                     Match = $"{matchPercentage}%",
                     Notes = perfumeNotes,
-                    BottleShape = "rect", // (Buradaki switch case/rastgele atama kodunu koru)
+                    BottleShape = "rect",
                     GradientFrom = "from-gray-800",
                     GradientTo = "to-black"
                 };

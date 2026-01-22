@@ -9,6 +9,7 @@
         public string Match { get; set; }
         public List<string> Notes { get; set; }
 
+        public string ImageUrl { get; set; }
         // Tasarım için rastgele atanacak görsellikler
         public string GradientFrom { get; set; }
         public string GradientTo { get; set; }
