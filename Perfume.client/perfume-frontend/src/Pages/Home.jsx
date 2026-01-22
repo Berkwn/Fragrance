@@ -36,7 +36,7 @@ const Home = () => {
           <div className="size-8 text-primary flex items-center justify-center">
              <GiPerfumeBottle size={32} />
           </div>
-          <h2 className="text-[#111418] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Perfume Discovery</h2>
+          <h2 className="text-[#111418] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Kokum Lokum</h2>
         </div>
         
         {/* Profil / Çıkış Butonu */}

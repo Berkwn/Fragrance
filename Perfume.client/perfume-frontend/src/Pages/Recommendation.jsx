@@ -100,7 +100,7 @@ const fetchPerfumes = async () => {
             <div className="flex size-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
                <GiPerfumeBottle size={24} />
             </div>
-            <h2 className="text-xl font-bold tracking-tight">ScentFinder</h2>
+            <h2 className="text-xl font-bold tracking-tight">Kokum Lokum</h2>
           </button>
         </div>
       </header>
@@ -111,7 +111,7 @@ const fetchPerfumes = async () => {
           
           <div className="mb-10 flex flex-col gap-4">
             <h1 className="text-4xl font-black leading-tight tracking-tight text-white md:text-5xl lg:text-6xl">
-              Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">Signature Scent</span>
+              Kokunu <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">Keşfet</span>
             </h1>
             <p className="max-w-2xl text-lg text-text-muted">
               Sevdiğin içerikleri seç, yapay zeka sana en uygun parfümü bulsun.

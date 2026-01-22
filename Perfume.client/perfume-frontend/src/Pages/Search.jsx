@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MdSearch, MdCompareArrows, MdStar, MdClose, MdSend, MdComment, MdThumbUp } from 'react-icons/md';
 import { GiPerfumeBottle } from 'react-icons/gi';
@@ -28,6 +28,10 @@ const SearchPage = () => {
   const [activeReviewId, setActiveReviewId] = useState(null); // Hangi parfümün yorumları açık?
 
   // --- FONKSİYONLAR ---
+
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+  })
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -131,7 +135,7 @@ const SearchPage = () => {
       <header className="sticky top-0 z-50 flex items-center justify-between border-b border-surface-highlight bg-background-dark/95 backdrop-blur-sm px-6 py-3 lg:px-10">
         <button onClick={() => navigate('/')} className="flex items-center gap-3 text-white hover:opacity-80">
            <GiPerfumeBottle size={24} className="text-primary" />
-           <h2 className="text-xl font-bold">ScentFinder</h2>
+           <h2 className="text-xl font-bold">Kokum Lokum</h2>
         </button>
       </header>
 
