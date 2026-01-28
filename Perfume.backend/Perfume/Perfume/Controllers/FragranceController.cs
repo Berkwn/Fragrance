@@ -235,7 +235,7 @@ namespace Perfume.Controllers
                             { _context.FragranceNotes.Add(new FragranceNote { FragranceId = originalFragrance.Id, NoteId = noteEntity.Id }); await _context.SaveChangesAsync(); }
 
                             if (!await _context.FragranceNotes.AnyAsync(fn => fn.FragranceId == dupeFragrance.Id && fn.NoteId == noteEntity.Id))
-                            { _context.FragranceNotes.Add(new FragranceNote { FragranceId = dupeFragrance.Id, NoteId = noteEntity.Id }); await _context.SaveChangesAsync(); }
+                            { _context.FragranceNotes.Add(new FragranceNote { FragranceId = dupeFragrance.Id, NoteId = noteEntity.Id,  }); await _context.SaveChangesAsync(); }
                         }
                     }
 
@@ -279,52 +279,47 @@ namespace Perfume.Controllers
         [HttpPost] 
         public async Task<ActionResult<List<FragranceDto>>> Recommend([FromBody] SearchRequest request)
         {
-           
+
             var notesToSearch = request.SelectedNotes;
 
             
-            var query = _context.Fragrances
-                                .Include(f => f.Brand)
-                                .Include(f => f.FragranceNotes)
-                                    .ThenInclude(fn => fn.Note)
-                                .AsQueryable();
-
-            if (notesToSearch != null && notesToSearch.Any())
+            if (notesToSearch == null || !notesToSearch.Any())
             {
-             
-                query = query.Where(f => f.FragranceNotes.Any(fn => notesToSearch.Contains(fn.Note.Name)));
+                return Ok(new List<FragranceDto>());
             }
 
-            var fragrances = await query.ToListAsync();
+            double totalSelectedNotes = notesToSearch.Count;
 
-           
-
-            var result = fragrances.Select(f => {
-                var perfumeNotes = f.FragranceNotes.Select(fn => fn.Note.Name).ToList();
-
-                int matchCount = perfumeNotes.Count(n => notesToSearch.Contains(n));
-
-                int matchPercentage = notesToSearch.Any()
-                    ? (int)((double)matchCount / notesToSearch.Count * 100)
-                    : 100;
-
-
-                return new FragranceDto
+            var result= await _context.Fragrances.Where(x=>x.FragranceNotes.Any(fn=>notesToSearch.Contains(fn.Note.Name)))
+                .Select(x=> new 
                 {
-                    Id = f.Id,
-                    Brand = f.Brand != null ? f.Brand.Name : "Bilinmiyor",
-                    Name = f.Name,
-                    ImageUrl = f.ImageUrl,
-                    Price = $"${f.Price}",
-                    Match = $"{matchPercentage}%",
-                    Notes = perfumeNotes,
-                    BottleShape = "rect",
-                    GradientFrom = "from-gray-800",
-                    GradientTo = "to-black"
-                };
-            }).OrderByDescending(x => x.Match).ToList();
+                    x.Id,
+                    x.Name,
+                    BrandName=x.Brand!=null ? x.Brand.Name:"Bilinmiyor",
+                    x.ImageUrl,
+                    Notes=x.FragranceNotes.Select(x=>x.Note.Name).ToList(),
+                    x.Price,
+                    Fragrance=x,
+                    MatchCount = x.FragranceNotes.Count(fn => notesToSearch.Contains(fn.Note.Name))
+                })
+                .OrderByDescending(x=> x.MatchCount)
+                .Take(10)
+                .ToListAsync();
 
-            return Ok(result);
+            var finalResult = result.Select(x => new FragranceDto
+            {
+                Id = x.Id,
+                Brand = x.BrandName,
+                ImageUrl = x.ImageUrl,
+                Price = $"{x.Price}",
+                Match = $"{(int)((x.MatchCount / totalSelectedNotes) * 100)}%",
+                Notes = x.Notes,
+                BottleShape = "rect",
+                GradientFrom = "from-to-800",
+                GradientTo = "to-black"
+            }).ToList();
+
+            return Ok(finalResult);
         }
     }
 
