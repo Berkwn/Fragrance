@@ -1,0 +1,36 @@
+services:
+  # Veritabanı Servisi
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD} # .env dosyasından çekecek
+    ports:
+      - "1433:1433"
+
+  # .NET Backend (.backend)
+  backend:
+    build:
+      context: ./Perfume.backend/Perfume
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # .NET, alttaki çift alt çizgiyi (__) appsettings'teki ":" olarak anlar
+      - ConnectionStrings__SqlServer=Server=db;Database=Perfumes;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True
+      - AppSettings__Token=${JWT_TOKEN}
+    ports:
+      - "5000:8080"
+    depends_on:
+      - db
+
+  # React Frontend (.client)
+  frontend:
+    build:
+      context: ./Perfume.client/perfume-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000/api
+    depends_on:
+      - backend
